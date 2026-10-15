@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>⚓ Conexo do Porto 2</title>
+<title>⚓ Conexo do Porto</title>
 
 <style>
 
@@ -28,6 +28,12 @@
     box-sizing:border-box;
     font-family:Segoe UI, sans-serif;
 }
+a:link {
+font-size: 18px;
+font-weight: bold;
+color: white;
+}
+
 
 body{
     background:var(--bg);
@@ -41,6 +47,10 @@ body{
 .container{
     width:100%;
     max-width:900px;
+}
+.containera {
+  display: grid;
+  grid-template-columns: auto auto auto;
 }
 
 h1{
@@ -153,354 +163,14 @@ button.action{
 
 <div class="container">
 
-<h1>⚓ Conexo do Porto #2</h1>
+<h1>⚓ Conexo do Porto</h1>
 <div class="subtitle">
-Encontre os 4 grupos de palavras relacionadas
+Escolha a edição
 </div>
-
-<div class="topbar">
-
-<div class="stat">
-🏆 Pontos<br>
-<span id="score">0</span>
+<div class="containera">
+<a href="/conexodoporto1.html"> Setembro 2026 </a><br>
+<a href="/conexodoporto2.html"> Outubro 2026 </a>
 </div>
-
-<div class="stat">
-❤️ Vidas<br>
-<span id="lives">4</span>
-</div>
-
-<div class="stat">
-⏱ Tempo<br>
-<span id="timer">300</span>s
-</div>
-
-</div>
-
-<div id="groups" class="groups"></div>
-
-<div class="grid" id="grid"></div>
-
-<div class="actions">
-<button class="action submit" onclick="checkGroup()">
-Confirmar Grupo
-</button>
-
-<button class="action clear" onclick="clearSelection()">
-Limpar Seleção
-</button>
-</div>
-
-<div id="feedback" class="feedback"></div>
-
-<div class="endscreen" id="endscreen">
-<h2>Partida Encerrada</h2>
-<br>
-<h3 id="finalscore"></h3>
-<h4>Feito por enrishi</h4>
-</div>
-
-</div>
-
-<script>
-
-const groups = [
-
-{
-name:"Contrato de ____",
-difficulty:"yellow",
-score:100,
-words:[
-"Arrendamento",
-"Cessão",
-"Trabalho",
-"Estágio"
-]
-},
-
-{
-name:"Dragagem",
-difficulty:"green",
-score:100,
-words:[
-"Profundidade",
-"Sedimento",
-"Assoreamento",
-"Leito"
-]
-},
-
-{
-name:"Embarcações cargueiras",
-difficulty:"blue",
-score:100,
-words:[
-"Graneleiro",
-"Petroleiro",
-"Ro-Ro",
-"Cruzeiro"
-]
-},
-
-{
-name:"EP - Especialista portuário",
-difficulty:"purple",
-score:100,
-words:[
-"Psicólogo",
-"Biólogo",
-"Engenheiro",
-"Jornalista"
-]
-}
-
-];
-
-let score = 0;
-let lives = 4;
-
-let solved = 0;
-let selected = [];
-
-let allWords = [];
-let timer = 600;
-
-const grid = document.getElementById("grid");
-
-groups.forEach(g=>{
-    g.words.forEach(word=>{
-        allWords.push({
-            word,
-            group:g.name
-        });
-    });
-});
-
-shuffle(allWords);
-
-renderBoard();
-
-const interval = setInterval(()=>{
-
-    timer--;
-
-    document.getElementById("timer").innerText =
-    timer;
-
-    if(timer<=0){
-        gameOver();
-    }
-
-},1000);
-
-function shuffle(arr){
-
-    for(let i=arr.length-1;i>0;i--){
-
-        const j=Math.floor(Math.random()*(i+1));
-
-        [arr[i],arr[j]]=[arr[j],arr[i]];
-    }
-}
-
-function renderBoard(){
-
-    grid.innerHTML="";
-
-    allWords.forEach(item=>{
-
-        if(item.solved) return;
-
-        const btn =
-        document.createElement("button");
-
-        btn.className="tile";
-
-        btn.innerText=item.word;
-
-        btn.onclick=()=>toggle(item.word,btn);
-
-        grid.appendChild(btn);
-    });
-}
-
-function toggle(word,element){
-
-    if(selected.includes(word)){
-
-        selected =
-        selected.filter(w=>w!==word);
-
-        element.classList.remove("selected");
-
-        return;
-    }
-
-    if(selected.length>=4) return;
-
-    selected.push(word);
-
-    element.classList.add("selected");
-}
-
-function clearSelection(){
-
-    selected=[];
-
-    document.querySelectorAll(".tile")
-    .forEach(t=>t.classList.remove("selected"));
-
-}
-
-function checkGroup(){
-
-    if(selected.length!==4){
-
-        showFeedback(
-        "Selecione exatamente 4 palavras."
-        );
-
-        return;
-    }
-
-    let found=null;
-
-    for(const g of groups){
-
-        const match =
-        g.words.every(
-        w=>selected.includes(w)
-        );
-
-        if(match){
-
-            found=g;
-            break;
-        }
-    }
-
-    if(found){
-
-        solved++;
-
-        score += found.score;
-
-        document.getElementById("score")
-        .innerText=score;
-
-        revealGroup(found);
-
-        allWords.forEach(item=>{
-
-            if(found.words.includes(item.word))
-                item.solved=true;
-
-        });
-
-        renderBoard();
-
-        clearSelection();
-
-        showFeedback(
-        "✅ Grupo encontrado: " +
-        found.name
-        );
-
-        if(solved===4){
-
-            gameOver(true);
-        }
-
-    }else{
-
-        lives--;
-
-        document.getElementById("lives")
-        .innerText=lives;
-
-        showFeedback(
-        "❌ Essas palavras não formam um grupo."
-        );
-
-        clearSelection();
-
-        if(lives===0){
-
-            gameOver();
-        }
-    }
-}
-
-function revealGroup(group){
-
-    const div =
-    document.createElement("div");
-
-    div.className="group-found";
-
-    if(group.difficulty==="yellow")
-        div.style.background="var(--yellow)";
-
-    if(group.difficulty==="green")
-        div.style.background="var(--green)";
-
-    if(group.difficulty==="blue")
-        div.style.background="var(--blue)";
-
-    if(group.difficulty==="purple")
-        div.style.background="var(--purple)";
-
-    div.innerHTML=
-    "<strong>"+group.name+"</strong><br>"+
-    group.words.join(" • ");
-
-    document
-    .getElementById("groups")
-    .appendChild(div);
-}
-
-function showFeedback(text){
-
-    document
-    .getElementById("feedback")
-    .innerText=text;
-}
-
-function gameOver(win=false){
-
-    clearInterval(interval);
-
-    grid.style.display="none";
-
-    document
-    .querySelector(".actions")
-    .style.display="none";
-
-    document
-    .getElementById("endscreen")
-    .style.display="block";
-
-    let bonus =
-    Math.max(timer,0);
-
-    score += bonus;
-
-    document
-    .getElementById("score")
-    .innerText=score;
-
-    document
-    .getElementById("finalscore")
-    .innerHTML=
-    (win ? "🏆 Todos os grupos encontrados🏆!<br><br>"
-         : "⛔ Fim de jogo<br><br>"
-    ) +
-    "Pontuação Final: <b>" +
-    score +
-    "</b>";
-}
-
-</script>
 
 
 </body>
